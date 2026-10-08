@@ -2,6 +2,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -18,9 +19,12 @@ const supabase = createClient(
 app.use(cors());
 app.use(express.json());
 
-// Test route - just to check the server is alive
+// Serve the Apex Sport frontend
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Open the website at the root URL
 app.get('/', (req, res) => {
-    res.send('Apex Sport backend is running.');
+    res.sendFile(path.join(__dirname, '../frontend/website.html'));
 });
 
 // Get all active categories
