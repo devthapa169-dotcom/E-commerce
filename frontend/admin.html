@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>APEX SPORT — Admin Panel</title>
+        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="styles/admin.css" rel="stylesheet">
+      </head>
+      <body>
+
+      <!-- TOAST -->
+        <div class="toast-admin" id="adminToast"><div class="ta-dot orange" id="toastDot"></div><span id="adminToastMsg"></span></div>
+
+        <!-- LOGIN SCREEN -->
+        <div id="loginScreen">
+          <div class="login-box">
+            <div class="login-logo">APEX<span>.</span>SPORT</div>
+            <div class="login-subtitle">Admin Panel · Restricted Access</div>
+            <label class="login-label" for="loginUser">Username</label>
+            <input class="login-input" type="text" id="loginUser" placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()">
+            <label class="login-label" for="loginPass">Password</label>
+            <input class="login-input" type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+            <button class="login-btn" onclick="doLogin()">Sign In →</button>
+            <div class="login-error" id="loginErr">❌ Incorrect username or password</div>
+            <div class="login-hint">Default: <span>admin</span> / <span>apex2026</span><br>Change password in Settings after login.</div>
+          </div>
+        </div>
+
+        <!-- ADMIN APP -->
+        <div id="adminApp">
+          <!-- SIDEBAR -->
+          <div class="sidebar">
+            <div class="sidebar-logo">
+              <div class="sidebar-logo-text">APEX<span>.</span>SPORT</div>
+              <div class="sidebar-logo-sub">Admin Panel</div>
+            </div>
+            <nav class="sidebar-nav">
+              <div class="nav-group-title">Main</div>
+              <button class="nav-item active" data-panel="dashboard" onclick="showPanel('dashboard')"><span class="ni-icon">📊</span> Dashboard</button>
+              <button class="nav-item" data-panel="products" onclick="showPanel('products')"><span class="ni-icon">🛍️</span> Products <span class="nav-badge" id="prodBadge">0</span></button>
+              <button class="nav-item" data-panel="categories" onclick="showPanel('categories')"><span class="ni-icon">🏷️</span> Categories</button>
+              <div class="nav-group-title">Marketing</div>
+              <button class="nav-item" data-panel="instagram" onclick="showPanel('instagram')"><span class="ni-icon">📸</span> Instagram Posts</button>
+              <div class="nav-group-title">Config</div>
+              <button class="nav-item" data-panel="settings" onclick="showPanel('settings')"><span class="ni-icon">⚙️</span> Settings</button>
+              <button class="nav-item" data-panel="export" onclick="showPanel('export')"><span class="ni-icon">📤</span> Export Data</button>
+            </nav>
+            <div class="sidebar-footer">
+              <a class="visit-site-btn" href="index.html" target="_blank">🌐 View Live Site</a>
+              <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+            </div>
+          </div>
+
+          <!-- MAIN -->
+          <div class="main">
+            <div class="topbar">
+              <div class="topbar-title" id="topbarTitle">Dashboard</div>
+              <div class="topbar-right">
+                <div class="save-indicator" id="saveIndicator">✓ Saved</div>
+                <div class="topbar-tag">Admin</div>
+              </div>
+            </div>
+
+            <div class="content">
+
+              <!-- DASHBOARD -->
+              <div class="panel active" id="panel-dashboard">
+                <div class="stats-grid" id="dashStats"></div>
+                <div class="dash-grid2">
+                  <div class="dash-card">
+                    <div class="dash-card-title">Recent Products</div>
+                    <div id="recentProds"></div>
+                  </div>
+                  <div class="dash-card">
+                    <div class="dash-card-title">Quick Actions</div>
+                    <button class="quick-action" onclick="showPanel('products'); openProductModal()"><div class="qa-icon" style="background:rgba(255,153,0,.1)">➕</div> Add New Product</button>
+                    <button class="quick-action" onclick="showPanel('categories'); openCatModal()"><div class="qa-icon" style="background:rgba(59,130,246,.1)">🏷️</div> Add Category</button>
+                    <button class="quick-action" onclick="showPanel('instagram')"><div class="qa-icon" style="background:rgba(188,24,136,.1)">📸</div> Create Instagram Post</button>
+                    <button class="quick-action" onclick="showPanel('settings')"><div class="qa-icon" style="background:rgba(255,255,255,.06)">⚙️</div> Update Affiliate Tag</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PRODUCTS -->
+              <div class="panel" id="panel-products">
+                <div class="panel-hdr">
+                  <h2>Products</h2>
+                  <button class="btn-primary" onclick="openProductModal()">➕ Add Product</button>
+                </div>
+                <div class="search-bar">
+                  <input class="search-inp" type="text" id="prodSearch" placeholder="🔍  Search products..." oninput="renderProductTable()">
+                  <select class="filter-sel" id="prodCatFilter" onchange="renderProductTable()">
+                    <option value="all">All Categories</option>
+                  </select>
+                </div>
+                <div class="table-wrap">
+                  <table class="prod-table">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>ASIN</th>
+                        <th>Price</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="prodTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- CATEGORIES -->
+              <div class="panel" id="panel-categories">
+                <div class="panel-hdr">
+                  <h2>Categories</h2>
+                  <button class="btn-primary" onclick="openCatModal()">➕ Add Category</button>
+                </div>
+                <div class="cat-grid-admin" id="catGridAdmin"></div>
+              </div>
+
+              <!-- INSTAGRAM POST GENERATOR -->
+              <div class="panel" id="panel-instagram">
+                <div class="panel-hdr"><h2>Instagram Post Generator</h2></div>
+                <div class="ig-gen-layout">
+                  <div>
+                    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:16px;">
+                      <div class="form-grid">
+                        <div class="form-group">
+                          <label class="form-label">Select Product</label>
+                          <select class="form-select" id="igProduct" onchange="updateIGPreview()"></select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Post Type</label>
+                          <select class="form-select" id="igPostType" onchange="updateIGPreview()">
+                            <option value="deal">🔥 Hot Deal</option>
+                            <option value="review">⭐ Product Review</option>
+                            <option value="comparison">⚡ Best Pick</option>
+                            <option value="motivation">💪 Motivational</option>
+                          </select>
+                        </div>
+                        <div class="form-group full">
+                          <label class="form-label">Custom Note (optional)</label>
+                          <input class="form-input" id="igCustomNote" placeholder="Add a personal note..." oninput="updateIGPreview()">
+                        </div>
+                      </div>
+                      <button class="btn-primary" style="margin-top:16px;width:100%;" onclick="regenerateIGCaption()">✨ Regenerate with AI</button>
+                    </div>
+                    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;">
+                      <div style="font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Copy Caption + Hashtags</div>
+                      <div class="ig-copy-area" id="igCopyArea"></div>
+                      <button class="btn-primary" onclick="copyIGCaption()">📋 Copy to Clipboard</button>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Preview</div>
+                    <div class="ig-preview-card">
+                      <div class="ig-preview-hdr">
+                        <div class="ig-preview-avatar"></div>
+                        <div class="ig-preview-username" id="igPreviewUser">@apexsport</div>
+                      </div>
+                      <div class="ig-preview-img"><img id="igPreviewImg" src="" alt=""></div>
+                      <div class="ig-preview-body">
+                        <div class="ig-preview-caption" id="igPreviewCaption"></div>
+                        <div class="ig-preview-hashtags" id="igPreviewHash"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SETTINGS -->
+              <div class="panel" id="panel-settings">
+                <div class="panel-hdr"><h2>Settings</h2></div>
+                <div class="settings-sections">
+                  <div class="settings-card">
+                    <div class="settings-card-hdr"><span>🛒</span><div class="settings-card-title">Amazon Affiliate</div></div>
+                    <div class="settings-card-body">
+                      <div class="settings-row">
+                        <div class="form-group">
+                          <label class="form-label">Affiliate Tag (Tracking ID)</label>
+                          <input class="form-input" id="s-affTag" placeholder="yourname-21">
+                          <div class="form-hint">From your Amazon Associates dashboard</div>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Amazon Locale</label>
+                          <select class="form-select" id="s-locale">
+                            <option value="amazon.in">Amazon India (.in)</option>
+                            <option value="amazon.com">Amazon US (.com)</option>
+                            <option value="amazon.co.uk">Amazon UK (.co.uk)</option>
+                            <option value="amazon.de">Amazon Germany (.de)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="settings-card">
+                    <div class="settings-card-hdr"><span>🌐</span><div class="settings-card-title">Site Info</div></div>
+                    <div class="settings-card-body">
+                      <div class="settings-row">
+                        <div class="form-group">
+                          <label class="form-label">Site Name</label>
+                          <input class="form-input" id="s-siteName" placeholder="APEX SPORT">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Instagram Handle</label>
+                          <input class="form-input" id="s-igHandle" placeholder="@apexsport">
+                        </div>
+                      </div>
+                      <div class="settings-row">
+                        <div class="form-group">
+                          <label class="form-label">Instagram URL</label>
+                          <input class="form-input" id="s-igUrl" placeholder="https://instagram.com/apexsport">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Contact Email</label>
+                          <input class="form-input" id="s-email" placeholder="you@email.com">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="settings-card">
+                    <div class="settings-card-hdr"><span>🔒</span><div class="settings-card-title">Change Admin Password</div></div>
+                    <div class="settings-card-body">
+                      <div class="change-pass-form">
+                        <div class="form-group">
+                          <label class="form-label">Current Password</label>
+                          <input class="form-input" type="password" id="s-curPass">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">New Password</label>
+                          <input class="form-input" type="password" id="s-newPass" placeholder="Min 6 characters">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Confirm New Password</label>
+                          <input class="form-input" type="password" id="s-confPass">
+                        </div>
+                        <button class="btn-primary" style="width:fit-content" onclick="changePassword()">🔒 Update Password</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:10px;">
+                    <button class="btn-primary" onclick="saveSettings()">💾 Save All Settings</button>
+                    <button class="btn-secondary" onclick="loadSettingsForm()">↩ Reset</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- EXPORT -->
+              <div class="panel" id="panel-export">
+                <div class="panel-hdr"><h2>Export Data</h2></div>
+                <div style="display:flex;flex-direction:column;gap:16px;max-width:500px;">
+                  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;">
+                    <div style="font-size:.95rem;font-weight:700;margin-bottom:8px;">📦 Export Products JSON</div>
+                    <div style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">Download all your products as a JSON file to back up or import into another system.</div>
+                    <button class="btn-primary" onclick="exportProducts()">⬇️ Download products.json</button>
+                  </div>
+                  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;">
+                    <div style="font-size:.95rem;font-weight:700;margin-bottom:8px;">📥 Import Products JSON</div>
+                    <div style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">Upload a previously exported JSON to restore your product catalog.</div>
+                    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importProducts(event)">
+                    <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📁 Choose JSON File</button>
+                  </div>
+                  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;">
+                    <div style="font-size:.95rem;font-weight:700;margin-bottom:8px;color:var(--red);">⚠️ Reset All Data</div>
+                    <div style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">Wipe all products and categories. This cannot be undone.</div>
+                    <button class="btn-danger" onclick="resetAll()">🗑️ Reset Everything</button>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /content -->
+          </div><!-- /main -->
+
+          <!-- MOBILE BOTTOM NAV -->
+          <div class="mobile-nav" id="mobileNav">
+            <div class="mobile-nav-inner">
+              <button class="mob-nav-btn active" data-panel="dashboard" onclick="showPanel('dashboard')"><span class="mob-icon">📊</span>Dashboard</button>
+              <button class="mob-nav-btn" data-panel="products" onclick="showPanel('products')"><span class="mob-icon">🛍️</span>Products</button>
+              <button class="mob-nav-btn" data-panel="categories" onclick="showPanel('categories')"><span class="mob-icon">🏷️</span>Categories</button>
+              <button class="mob-nav-btn" data-panel="instagram" onclick="showPanel('instagram')"><span class="mob-icon">📸</span>Instagram</button>
+              <button class="mob-nav-btn" data-panel="settings" onclick="showPanel('settings')"><span class="mob-icon">⚙️</span>Settings</button>
+            </div>
+          </div>
+        </div><!-- /adminApp -->
+
+        <!-- PRODUCT MODAL -->
+        <div class="modal-overlay" id="productModal">
+          <div class="modal">
+            <div class="modal-hdr">
+              <div class="modal-title" id="productModalTitle">Add Product</div>
+              <button class="modal-close" onclick="closeProductModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <div class="form-grid">
+                <div class="form-group full">
+                  <label class="form-label">Product Name *</label>
+                  <input class="form-input" id="f-name" placeholder="e.g. Nike Air Zoom Pegasus 41">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Amazon ASIN *</label>
+                  <div class="asin-lookup">
+                    <input class="form-input" id="f-asin" placeholder="e.g. B0BXQHXLPZ">
+                    <button class="lookup-btn" onclick="openAmazonLookup()">🔍 Find</button>
+                  </div>
+                  <div class="form-hint">10-char code from Amazon product URL: /dp/<b>ASIN</b></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Category *</label>
+                  <select class="form-select" id="f-cat"></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Price ($) *</label>
+                  <input class="form-input" id="f-price" type="number" step="0.01" placeholder="99.99">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Original Price (for discount)</label>
+                  <input class="form-input" id="f-oldprice" type="number" step="0.01" placeholder="149.99">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Star Rating (1-5)</label>
+                  <input class="form-input" id="f-rating" type="number" step="0.1" min="1" max="5" placeholder="4.8">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Review Count</label>
+                  <input class="form-input" id="f-reviews" type="number" placeholder="1240">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Badge</label>
+                  <select class="form-select" id="f-badge">
+                    <option value="">None</option>
+                    <option value="New">New</option>
+                    <option value="Deal">Deal</option>
+                    <option value="Hot">Hot</option>
+                    <option value="Prime">Prime</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Stock Status</label>
+                  <input class="form-input" id="f-stock" placeholder="In Stock / Only 3 left">
+                </div>
+                <div class="form-group full">
+                  <label class="form-label">Product Image URL *</label>
+                  <input class="form-input" id="f-img" placeholder="https://..." oninput="updateImgPreview()">
+                  <div class="form-hint">Use Unsplash URL or direct image link</div>
+                  <div class="form-preview">
+                    <div class="img-preview" id="imgPreviewBox" style="display:none">
+                      <img id="imgPreviewEl" src="" alt="">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Amazon Prime?</label>
+                  <select class="form-select" id="f-prime">
+                    <option value="true">Yes — Prime Eligible</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Featured (Show in Hot Picks)</label>
+                  <select class="form-select" id="f-hot">
+                    <option value="false">No</option>
+                    <option value="true">Yes — Feature it</option>
+                  </select>
+                </div>
+                <div class="form-group full">
+                  <label class="form-label">Visible on Site</label>
+                  <select class="form-select" id="f-active">
+                    <option value="true">✓ Active (Visible)</option>
+                    <option value="false">Hidden</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-secondary" onclick="closeProductModal()">Cancel</button>
+              <button class="btn-primary" onclick="saveProduct()">💾 Save Product</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATEGORY MODAL -->
+        <div class="modal-overlay" id="catModal">
+          <div class="modal" style="max-width:420px;">
+            <div class="modal-hdr">
+              <div class="modal-title" id="catModalTitle">Add Category</div>
+              <button class="modal-close" onclick="closeCatModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <div class="form-group">
+                  <label class="form-label">Category Name *</label>
+                  <input class="form-input" id="fc-name" placeholder="e.g. Swimming">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Emoji Icon *</label>
+                  <input class="form-input" id="fc-icon" placeholder="🏊" maxlength="4">
+                  <div class="form-hint">Single emoji to represent this sport</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Category ID (no spaces) *</label>
+                  <input class="form-input" id="fc-id" placeholder="swimming">
+                  <div class="form-hint">Lowercase, no spaces (used internally)</div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-secondary" onclick="closeCatModal()">Cancel</button>
+              <button class="btn-primary" onclick="saveCategory()">💾 Save Category</button>
+            </div>
+          </div>
+        </div>
+
+        <script src="scripts/admin.js"></script>
+      </body>
+  </html>

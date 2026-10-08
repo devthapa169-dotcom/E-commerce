@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>APEX SPORT — Sports Gear Picks & Recommendations</title>
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="styles/website.css">
+    </head>
+    <body>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+    <div class="toast" id="toast"><div class="toast-dot"></div><span id="toastMsg"></span></div>
+
+    <!-- CART -->
+    <div class="cart-ov" id="cartOv" onclick="closeCart()"></div>
+    <div class="cart-sb" id="cartSb">
+      <div class="cart-hdr">
+        <div class="cart-hdr-title">Your Picks</div>
+        <button class="cart-cls" onclick="closeCart()">✕</button>
+      </div>
+      <div class="cart-body" id="cartBody"></div>
+      <div class="cart-foot">
+        <div class="cart-subtotal">
+          <div class="cart-subtotal-lbl">Selected products</div>
+          <div class="cart-subtotal-val" id="cartTotal">0</div>
+        </div>
+        <div class="free-ship" id="freeShipMsg"></div>
+        <button class="cart-cta" onclick="showToast('Product links will be available soon.')">View Saved Picks →</button>
+      </div>
+    </div>
+
+    <!-- NAV -->
+    <nav id="navbar">
+      <a href="#" class="logo">APEX<span>.</span>SPORT</a>
+      <ul class="nav-links">
+        <li><a href="#categories">Sports</a></li>
+        <li><a href="#products">Shop</a></li>
+        <li><a href="#ai-search">AI Search</a></li>
+        <li><a href="#brands">Brands</a></li>
+      </ul>
+      <div class="nav-right">
+        <button class="nav-search-btn" onclick="document.getElementById('ai-search').scrollIntoView({behavior:'smooth'})">🔍 AI Search</button>
+        <button class="nav-cart" onclick="openCart()">🔖 Picks <div class="cart-count" id="cartCount">0</div></button>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section id="hero">
+      <div class="hero-bg">
+        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1800&auto=format&fit=crop&q=80" alt="Athletic gear">
+        <div class="hero-bg-overlay"></div>
+      </div>
+      <div class="hero-glow"></div>
+      <div class="hero-content">
+        <div class="hero-tag">Sports Gear • 2026 Picks</div>
+        <h1 class="hero-title">PUSH YOUR<br><span class="hl">LIMITS</span></h1>
+        <p class="hero-sub">Discover sports gear worth considering, with practical recommendations, comparisons, and performance-focused picks.</p>
+        <div class="hero-btns">
+          <a href="#products" class="btn-red">Explore Gear →</a>
+          <a href="#ai-search" class="btn-outline">✦ Find My Gear</a>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-num"><span>18</span>+</div>
+          <div class="stat-label">Current Picks</div>
+        </div>
+        <div>
+          <div class="stat-num"><span>6</span>
+          </div>
+          <div class="stat-label">Sports Covered</div>
+        </div>
+        <div>
+          <div class="stat-num"><span>1</span>
+          </div>
+          <div class="stat-label">Recommendation Hub</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="marquee-wrap">
+      <div class="marquee">
+        <span class="mi"><span>★</span>Running</span><span class="mi"><span>★</span>Football</span><span class="mi"><span>★</span>Basketball</span><span class="mi"><span>★</span>Swimming</span><span class="mi"><span>★</span>Cycling</span><span class="mi"><span>★</span>Tennis</span><span class="mi"><span>★</span>Golf</span><span class="mi"><span>★</span>Yoga</span>
+        <span class="mi"><span>★</span>Running</span><span class="mi"><span>★</span>Football</span><span class="mi"><span>★</span>Basketball</span><span class="mi"><span>★</span>Swimming</span><span class="mi"><span>★</span>Cycling</span><span class="mi"><span>★</span>Tennis</span><span class="mi"><span>★</span>Golf</span><span class="mi"><span>★</span>Yoga</span>
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <section id="categories">
+      <div class="sec-tag">Shop By Sport</div>
+      <h2 class="sec-title">FIND YOUR GAME</h2>
+      <div class="cat-grid">
+        <div class="cat-card wide reveal" onclick="filterAndScroll('running')">
+          <img class="cat-img" src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&auto=format&fit=crop&q=80" alt="Running">
+          <div class="cat-overlay"></div>
+          <div class="cat-content">
+            <div class="cat-sport">Most Popular</div>
+            <div class="cat-name">Running</div>
+            <div class="cat-count">Explore picks →</div>
+          </div>
+        </div>
+        <div class="cat-card reveal rd1" onclick="filterAndScroll('football')">
+          <img class="cat-img" src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&auto=format&fit=crop&q=80" alt="Football">
+          <div class="cat-overlay"></div>
+          <div class="cat-content">
+            <div class="cat-sport">New Arrivals</div>
+            <div class="cat-name">Football</div>
+            <div class="cat-count">Explore picks →</div>
+          </div>
+        </div>
+        <div class="cat-card reveal rd2" onclick="filterAndScroll('basketball')">
+          <img class="cat-img" src="https://images.unsplash.com/photo-1546519638405-a9267ffa6d7d?w=600&auto=format&fit=crop&q=80" alt="Basketball">
+          <div class="cat-overlay"></div>
+          <div class="cat-content">
+            <div class="cat-sport">Top Picks</div>
+            <div class="cat-name">Basketball</div>
+            <div class="cat-count">Explore picks →</div>
+          </div>
+        </div>
+        <div class="cat-card reveal rd1" onclick="filterAndScroll('tennis')">
+          <img class="cat-img" src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&auto=format&fit=crop&q=80" alt="Tennis">
+          <div class="cat-overlay"></div>
+          <div class="cat-content">
+            <div class="cat-sport">Pro Series</div>
+            <div class="cat-name">Tennis</div>
+            <div class="cat-count">Explore picks →</div>
+          </div>
+        </div>
+        <div class="cat-card reveal rd2" onclick="filterAndScroll('cycling')">
+          <img class="cat-img" src="https://images.unsplash.com/photo-1559348349-86f1f65817fe?w=600&auto=format&fit=crop&q=80" alt="Cycling">
+          <div class="cat-overlay"></div>
+          <div class="cat-content">
+            <div class="cat-sport">Summer Gear</div>
+            <div class="cat-name">Cycling</div>
+            <div class="cat-count">Explore picks →</div>
+          </div>
+        </div>
+        <div class="cat-card reveal rd4" onclick="filterAndScroll('swimming')">
+          <img class="cat-img" src="https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=600&auto=format&fit=crop&q=80" alt="Swimming">
+          <div class="cat-overlay"></div>
+          <div class="cat-content">
+            <div class="cat-sport">Aqua Sports</div>
+            <div class="cat-name">Swimming</div>
+            <div class="cat-count">Explore picks →</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI SEARCH -->
+    <section id="ai-search">
+      <div class="ai-search-inner">
+        <div class="sec-tag">Powered by Claude AI</div>
+        <h2 class="sec-title" style="margin-bottom:10px;">FIND YOUR<br>PERFECT GEAR</h2>
+        <p style="font-size:.95rem;color:var(--gray-light);line-height:1.7;margin-top:10px;">Describe what you need — our AI will recommend the best products for you.</p>
+        <div class="ai-box">
+          <span style="font-size:1.1rem;color:#555;">✦</span>
+          <input class="ai-input" id="aiInput" placeholder="e.g. I need trail running shoes for rocky terrain, size 10..." onkeydown="if(event.key==='Enter')askAI()">
+          <button class="ai-submit" id="aiBtn" onclick="askAI()">Ask AI →</button>
+        </div>
+        <div class="ai-chips">
+          <button class="ai-chip" onclick="fillAI('Best football cleats for grass')">⚽ Football Cleats</button>
+          <button class="ai-chip" onclick="fillAI('Running shoes for marathon training')">🏃 Marathon Shoes</button>
+          <button class="ai-chip" onclick="fillAI('Home gym equipment under $200')">🏋️ Home Gym</button>
+          <button class="ai-chip" onclick="fillAI('Basketball shoes for wide feet')">🏀 Basketball Shoes</button>
+          <button class="ai-chip" onclick="fillAI('Tennis racket for beginners')">🎾 Tennis Racket</button>
+          <button class="ai-chip" onclick="fillAI('Boxing gloves for sparring')">🥊 Boxing Gloves</button>
+        </div>
+        <div class="ai-response" id="aiResponse">
+          <div class="ai-response-label">AI Recommendation</div>
+          <div class="ai-response-text" id="aiResponseText"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section id="products">
+      <div class="prod-header">
+        <div>
+          <div class="sec-tag">Featured Gear</div>
+          <h2 class="sec-title">TOP SELLERS</h2>
+        </div>
+        <div class="filter-bar" id="filterBar">
+          <button class="ftab active" onclick="filterProds('all',this)">All</button>
+          <button class="ftab" onclick="filterProds('running',this)">Running</button>
+          <button class="ftab" onclick="filterProds('football',this)">Football</button>
+          <button class="ftab" onclick="filterProds('basketball',this)">Basketball</button>
+          <button class="ftab" onclick="filterProds('tennis',this)">Tennis</button>
+          <button class="ftab" onclick="filterProds('cycling',this)">Cycling</button>
+        </div>
+      </div>
+      <div class="prod-grid" id="prodGrid"></div>
+      <div class="load-more-wrap">
+        <button class="load-more" id="loadMoreBtn" onclick="loadMore()">Load More Products</button>
+      </div>
+    </section>
+
+    <!-- FEATURED PICKS BANNER -->
+    <div class="deal-section">
+      <div class="deal-inner reveal">
+        <div>
+          <div class="deal-badge">EDITOR'S PICKS</div>
+          <h2 class="deal-title">GEAR<br>WORTH A LOOK</h2>
+          <p class="deal-desc">Browse our current sports gear picks and compare products before buying. Affiliate links will be added after the product system is connected.</p>
+          <a href="#products" class="btn-red" style="margin-top:24px">Browse Picks →</a>
+        </div>
+        <div class="deal-timer">
+          <div class="timer-unit"><div class="timer-num">18+</div><div class="timer-lbl">Current Picks</div></div>
+          <div class="timer-sep">•</div>
+          <div class="timer-unit"><div class="timer-num">8</div><div class="timer-lbl">Sports</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRANDS -->
+    <section id="brands">
+      <div class="brands-lbl">Brands & Gear We Recommend</div>
+      <div class="brands-row">
+        <div class="brand">NIKE</div><div class="brand">ADIDAS</div><div class="brand">PUMA</div><div class="brand">UNDER ARMOUR</div><div class="brand">ASICS</div><div class="brand">NEW BALANCE</div><div class="brand">REEBOK</div><div class="brand">WILSON</div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <div class="features-grid">
+      <div class="feat"><div class="feat-icon">🚚</div><div class="feat-title">Free Shipping</div><div class="feat-desc">On orders over $75. Express next-day options available.</div></div>
+      <div class="feat"><div class="feat-icon">🔎</div><div class="feat-title">Research First</div><div class="feat-desc">We focus on useful specs, features, and comparisons before recommending gear.</div></div>
+      <div class="feat"><div class="feat-icon">⚙️</div><div class="feat-title">Performance Focused</div><div class="feat-desc">Recommendations are organized around real sports and training needs.</div></div>
+      <div class="feat"><div class="feat-icon">✦</div><div class="feat-title">Smart Recommendations</div><div class="feat-desc">Use categories and AI-assisted guidance to narrow down your options.</div></div>
+    </div>
+
+    <!-- NEWSLETTER -->
+    <section id="newsletter">
+      <div class="nl-inner">
+        <div class="sec-tag">Stay In The Game</div>
+        <h2 class="sec-title">GET EXCLUSIVE DROPS</h2>
+        <p class="nl-desc">Be first to know about new arrivals, pro deals, and athlete tips. No spam — only fire.</p>
+        <div class="nl-form">
+          <input type="email" class="nl-input" id="nlEmail" placeholder="Your email address">
+          <button class="nl-btn" onclick="subscribe()">Subscribe →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="foot-top">
+        <div>
+          <a href="#" class="foot-logo">APEX<span>.</span>SPORT</a>
+          <p class="foot-desc">Premium athletic gear for those who push harder, run faster, and refuse to quit.</p>
+        </div>
+        <div>
+          <div class="foot-col-title">Shop</div>
+          <ul class="foot-links"><li><a href="#">Running</a></li><li><a href="#">Football</a></li><li><a href="#">Basketball</a></li><li><a href="#">Fitness</a></li><li><a href="#">Tennis</a></li><li><a href="#">Sale</a></li></ul>
+        </div>
+        <div>
+          <div class="foot-col-title">Company</div>
+          <ul class="foot-links"><li><a href="#">About Us</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li><li><a href="#">Sustainability</a></li></ul>
+        </div>
+        <div>
+          <div class="foot-col-title">Support</div>
+          <ul class="foot-links"><li><a href="#">Help Center</a></li><li><a href="#">Shipping</a></li><li><a href="#">Returns</a></li><li><a href="#">Size Guide</a></li><li><a href="#">Contact</a></li></ul>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <div class="foot-copy">© 2026 APEX SPORT. All rights reserved.</div>
+        <div class="socials">
+          <a href="#" class="soc">𝕏</a><a href="#" class="soc">ig</a><a href="#" class="soc">fb</a><a href="#" class="soc">yt</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="scripts/website.js"></script>
+    </body>
+</html>
