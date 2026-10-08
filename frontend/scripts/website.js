@@ -45,7 +45,7 @@ function mapProduct(p) {
 
 async function fetchProducts() {
   try {
-    const res = await fetch('http://localhost:5000/products');
+    const res = await fetch('/products');
     const data = await res.json();
     PRODUCTS = data.map(mapProduct);
   } catch (err) {
