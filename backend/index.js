@@ -122,7 +122,7 @@ app.post('/ai/recommend', async (req, res) => {
     try {
         const { data: products, error } = await supabase
             .from('products')
-            .select('id, name, description, sport, brand, price, original_price, currency, rating, review_count, categories(name, slug)')
+            .select('id, name, description, sport, brand, price, original_price, currency, image_url, rating, review_count, categories(name, slug)')
             .eq('active', true)
             .limit(100);
 
