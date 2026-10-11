@@ -234,41 +234,124 @@ async function askAI() {
       respText.appendChild(empty);
     }
 
-    products.forEach(product => {
-      const card = document.createElement('div');
-      card.className = 'ai-product-result';
+    if (products.length) {
+      const resultsHeader = document.createElement('div');
+      resultsHeader.className = 'ai-results-heading';
+      resultsHeader.innerHTML = '<span>YOUR MATCHES</span><small>' + products.length + ' product' + (products.length === 1 ? '' : 's') + ' from our catalogue</small>';
+      respText.appendChild(resultsHeader);
 
-      if (product.image_url) {
-        const img = document.createElement('img');
-        img.src = product.image_url;
-        img.alt = product.name || 'Recommended product';
-        img.loading = 'lazy';
-        img.onerror = () => img.remove();
-        card.appendChild(img);
-      }
+      const resultsGrid = document.createElement('div');
+      resultsGrid.className = 'ai-results-grid';
 
-      const name = document.createElement('h4');
-      name.textContent = product.name || 'Product';
-      card.appendChild(name);
+      products.forEach((product, index) => {
+        const card = document.createElement('article');
+        card.className = 'ai-product-result';
 
-      if (product.price != null) {
-        const price = document.createElement('p');
-        const symbol = product.currency === 'INR' ? '₹' : '$';
-        price.textContent = `${symbol}${Number(product.price).toFixed(2)}`;
-        card.appendChild(price);
-      }
+        const media = document.createElement('div');
+        media.className = 'ai-result-media';
 
-      if (product.affiliate_url) {
-        const link = document.createElement('a');
-        link.href = product.affiliate_url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer sponsored';
-        link.textContent = 'View deal →';
-        card.appendChild(link);
-      }
+        if (product.image_url) {
+          const img = document.createElement('img');
+          img.src = product.image_url;
+          img.alt = product.name || 'Recommended product';
+          img.loading = 'lazy';
+          img.onerror = () => {
+            img.remove();
+            media.classList.add('image-missing');
+            media.textContent = 'APEX SPORT';
+          };
+          media.appendChild(img);
+        } else {
+          media.classList.add('image-missing');
+          media.textContent = 'APEX SPORT';
+        }
 
-      respText.appendChild(card);
-    });
+        const rank = document.createElement('span');
+        rank.className = 'ai-result-rank';
+        rank.textContent = String(index + 1).padStart(2, '0');
+        media.appendChild(rank);
+        card.appendChild(media);
+
+        const details = document.createElement('div');
+        details.className = 'ai-result-details';
+
+        const meta = document.createElement('div');
+        meta.className = 'ai-result-meta';
+        meta.textContent = product.brand || product.sport || 'SPORTS GEAR';
+        details.appendChild(meta);
+
+        const name = document.createElement('h4');
+        name.textContent = product.name || 'Recommended product';
+        details.appendChild(name);
+
+        if (product.description) {
+          const description = document.createElement('p');
+          description.className = 'ai-result-description';
+          description.textContent = product.description;
+          details.appendChild(description);
+        }
+
+        const footer = document.createElement('div');
+        footer.className = 'ai-result-footer';
+
+        if (product.price != null) {
+          const price = document.createElement('div');
+          price.className = 'ai-result-price';
+          const symbol = product.currency === 'INR' ? '₹' : '
+  } catch (error) {
+    console.error('AI recommendation failed:', error);
+    respText.textContent =
+      error.message || 'Could not get recommendations. Please try again later.';
+    showToast('AI search failed. Check the deployment logs.');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    btn.textContent = 'Ask AI →';
+  }
+}
+
+
+
+// ─── SUBSCRIBE ─────────────────────────────────────────
+function subscribe(){
+  const v=document.getElementById('nlEmail').value.trim();
+  if(!v||!v.includes('@')){showToast('Please enter a valid email!');return;}
+  showToast('🎉 You are on the APEX SPORT list!');
+  document.getElementById('nlEmail').value='';
+}
+
+// ─── INIT ───────────────────────────────────────────────
+(async function init() {
+  await fetchProducts();
+  renderProducts();
+  updatePicksUI();
+})();;
+          price.textContent = symbol + Number(product.price).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+          footer.appendChild(price);
+        }
+
+        if (product.affiliate_url) {
+          const link = document.createElement('a');
+          link.className = 'ai-result-link';
+          link.href = product.affiliate_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer sponsored';
+          link.textContent = 'Check price ↗';
+          footer.appendChild(link);
+        } else {
+          const unavailable = document.createElement('span');
+          unavailable.className = 'ai-result-unavailable';
+          unavailable.textContent = 'Link unavailable';
+          footer.appendChild(unavailable);
+        }
+
+        details.appendChild(footer);
+        card.appendChild(details);
+        resultsGrid.appendChild(card);
+      });
+
+      respText.appendChild(resultsGrid);
+    }
   } catch (error) {
     console.error('AI recommendation failed:', error);
     respText.textContent =
