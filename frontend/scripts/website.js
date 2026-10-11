@@ -177,16 +177,53 @@ function showToast(msg){
 
 // ─── AI SEARCH ──────────────────────────────────────────
 function fillAI(txt){document.getElementById('aiInput').value=txt;document.getElementById('aiInput').focus();}
+function escapeAIHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
 async function askAI(){
   const q=document.getElementById('aiInput').value.trim();
   if(!q){showToast('Please describe what gear you need!');return;}
   const btn=document.getElementById('aiBtn'),resp=document.getElementById('aiResponse'),respText=document.getElementById('aiResponseText');
-  btn.classList.add('loading'); btn.textContent='Preparing...'; resp.classList.add('show');
+  btn.classList.add('loading'); btn.disabled=true; btn.textContent='Searching...'; resp.classList.add('show');
   respText.innerHTML='<div class="ai-typing"><span></span><span></span><span></span></div>';
-  setTimeout(()=>{
-    respText.textContent='AI gear search will be connected through the secure backend in the next development stage. For now, use the sport filters below to browse our current picks.';
-    btn.classList.remove('loading'); btn.textContent='Ask AI →';
-  },700);
+  try{
+    const response=await fetch('/ai/recommend',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:q})
+    });
+    const data=await response.json();
+    if(!response.ok) throw new Error(data.error || 'AI search is temporarily unavailable.');
+    const message=document.createElement('p');
+    message.textContent=data.message || 'Here are the closest matches in our catalogue.';
+    respText.replaceChildren(message);
+    const list=document.createElement('div');
+    list.className='ai-product-list';
+    (data.products || []).forEach(p=>{
+      const card=document.createElement('article');
+      card.className='ai-product-card';
+      const safeUrl=typeof p.affiliate_url==='string' && /^https:\/\//i.test(p.affiliate_url) ? p.affiliate_url : '';
+      card.innerHTML=`
+        <div style="display:flex;gap:14px;align-items:center;padding:14px 0;border-top:1px solid rgba(255,255,255,.12)">
+          <img src="${escapeAIHtml(p.image_url)}" alt="${escapeAIHtml(p.name)}" loading="lazy" style="width:88px;height:88px;object-fit:contain;background:#fff;border-radius:8px" onerror="this.style.display='none'">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;margin-bottom:5px">${escapeAIHtml(p.name)}</div>
+            <div style="font-size:.85rem;color:var(--gray-light);margin-bottom:6px">${escapeAIHtml(p.brand)} · ${escapeAIHtml(p.category)}</div>
+            <div style="font-weight:700;color:var(--red)">₹${Number(p.price).toLocaleString('en-IN')}</div>
+            ${p.rating != null ? `<div style="font-size:.8rem;color:var(--gray-light)">★ ${escapeAIHtml(p.rating)} (${escapeAIHtml(p.review_count)} reviews)</div>` : ''}
+            ${safeUrl ? `<a href="${escapeAIHtml(safeUrl)}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-block;margin-top:8px;color:#fff;text-decoration:underline">View on retailer ↗</a>` : '<div style="font-size:.8rem;color:var(--gray-light);margin-top:8px">Retailer link unavailable</div>'}
+          </div>
+        </div>`;
+      list.appendChild(card);
+    });
+    if(list.children.length) respText.appendChild(list);
+  }catch(err){
+    const error=document.createElement('p');
+    error.textContent=err.message || 'AI search failed. Please try again.';
+    respText.replaceChildren(error);
+  }finally{
+    btn.classList.remove('loading'); btn.disabled=false; btn.textContent='Ask AI →';
+  }
 }
 
 // ─── SUBSCRIBE ─────────────────────────────────────────
