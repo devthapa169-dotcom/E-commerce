@@ -176,19 +176,111 @@ function showToast(msg){
 }
 
 
+
 // ─── AI SEARCH ──────────────────────────────────────────
-function fillAI(txt){document.getElementById('aiInput').value=txt;document.getElementById('aiInput').focus();}
-async function askAI(){
-  const q=document.getElementById('aiInput').value.trim();
-  if(!q){showToast('Please describe what gear you need!');return;}
-  const btn=document.getElementById('aiBtn'),resp=document.getElementById('aiResponse'),respText=document.getElementById('aiResponseText');
-  btn.classList.add('loading'); btn.textContent='Preparing...'; resp.classList.add('show');
-  respText.innerHTML='<div class="ai-typing"><span></span><span></span><span></span></div>';
-  setTimeout(()=>{
-    respText.textContent='AI gear search will be connected through the secure backend in the next development stage. For now, use the sport filters below to browse our current picks.';
-    btn.classList.remove('loading'); btn.textContent='Ask AI →';
-  },700);
+function fillAI(txt) {
+  document.getElementById('aiInput').value = txt;
+  document.getElementById('aiInput').focus();
 }
+
+async function askAI() {
+  const input = document.getElementById('aiInput');
+  const q = input.value.trim();
+
+  if (!q) {
+    showToast('Please describe what gear you need!');
+    return;
+  }
+
+  const btn = document.getElementById('aiBtn');
+  const resp = document.getElementById('aiResponse');
+  const respText = document.getElementById('aiResponseText');
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+  btn.textContent = 'Searching...';
+  resp.classList.add('show');
+  respText.textContent = 'Finding gear that matches your needs...';
+
+  try {
+    const response = await fetch('/ai/recommend', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ query: q })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || `Request failed (${response.status})`);
+    }
+
+    // Build the result using DOM methods rather than inserting
+    // AI-generated text directly as HTML.
+    respText.replaceChildren();
+
+    const message = document.createElement('p');
+    message.textContent = data.message || 'Here are some matching products.';
+    respText.appendChild(message);
+
+    const products = Array.isArray(data.products) ? data.products : [];
+
+    if (products.length === 0) {
+      const empty = document.createElement('p');
+      empty.textContent =
+        'No matching products were found in the current catalogue. Try another description.';
+      respText.appendChild(empty);
+    }
+
+    products.forEach(product => {
+      const card = document.createElement('div');
+      card.className = 'ai-product-result';
+
+      if (product.image_url) {
+        const img = document.createElement('img');
+        img.src = product.image_url;
+        img.alt = product.name || 'Recommended product';
+        img.loading = 'lazy';
+        img.onerror = () => img.remove();
+        card.appendChild(img);
+      }
+
+      const name = document.createElement('h4');
+      name.textContent = product.name || 'Product';
+      card.appendChild(name);
+
+      if (product.price != null) {
+        const price = document.createElement('p');
+        const symbol = product.currency === 'INR' ? '₹' : '$';
+        price.textContent = `${symbol}${Number(product.price).toFixed(2)}`;
+        card.appendChild(price);
+      }
+
+      if (product.affiliate_url) {
+        const link = document.createElement('a');
+        link.href = product.affiliate_url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer sponsored';
+        link.textContent = 'View deal →';
+        card.appendChild(link);
+      }
+
+      respText.appendChild(card);
+    });
+  } catch (error) {
+    console.error('AI recommendation failed:', error);
+    respText.textContent =
+      error.message || 'Could not get recommendations. Please try again later.';
+    showToast('AI search failed. Check the deployment logs.');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    btn.textContent = 'Ask AI →';
+  }
+}
+
 
 
 // ─── SUBSCRIBE ─────────────────────────────────────────
