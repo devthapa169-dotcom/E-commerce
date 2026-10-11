@@ -175,19 +175,134 @@ function showToast(msg){
   toastT=setTimeout(()=>t.classList.remove('show'),2800);
 }
 
+
 // ─── AI SEARCH ──────────────────────────────────────────
-function fillAI(txt){document.getElementById('aiInput').value=txt;document.getElementById('aiInput').focus();}
-async function askAI(){
-  const q=document.getElementById('aiInput').value.trim();
-  if(!q){showToast('Please describe what gear you need!');return;}
-  const btn=document.getElementById('aiBtn'),resp=document.getElementById('aiResponse'),respText=document.getElementById('aiResponseText');
-  btn.classList.add('loading'); btn.textContent='Preparing...'; resp.classList.add('show');
-  respText.innerHTML='<div class="ai-typing"><span></span><span></span><span></span></div>';
-  setTimeout(()=>{
-    respText.textContent='AI gear search will be connected through the secure backend in the next development stage. For now, use the sport filters below to browse our current picks.';
-    btn.classList.remove('loading'); btn.textContent='Ask AI →';
-  },700);
+function fillAI(txt) {
+  document.getElementById('aiInput').value = txt;
+  document.getElementById('aiInput').focus();
 }
+
+function escapeAIHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
+async function askAI() {
+  const q = document.getElementById('aiInput').value.trim();
+
+  if (!q) {
+    showToast('Please describe what gear you need!');
+    return;
+  }
+
+  const btn = document.getElementById('aiBtn');
+  const resp = document.getElementById('aiResponse');
+  const respText = document.getElementById('aiResponseText');
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+  btn.textContent = 'Searching...';
+  resp.classList.add('show');
+  respText.textContent = 'Finding suitable products...';
+
+  try {
+    const response = await fetch('/ai/recommend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'AI search is temporarily unavailable.');
+    }
+
+    // Render the AI explanation as text, not HTML.
+    const message = document.createElement('p');
+    message.textContent = data.message || 'Here are the closest matches.';
+    respText.replaceChildren(message);
+
+    const list = document.createElement('div');
+    list.className = 'ai-product-list';
+
+    (data.products || []).forEach(product => {
+      const card = document.createElement('article');
+      card.className = 'ai-product-card';
+
+      const affiliateUrl =
+        typeof product.affiliate_url === 'string' &&
+        /^https:\/\//i.test(product.affiliate_url)
+          ? product.affiliate_url
+          : '';
+
+      const image = document.createElement('img');
+      image.src = product.image_url || '';
+      image.alt = product.name || 'Sports product';
+      image.loading = 'lazy';
+      image.style.cssText =
+        'width:90px;height:90px;object-fit:contain;background:white;border-radius:8px';
+      image.onerror = () => { image.style.display = 'none'; };
+
+      const details = document.createElement('div');
+      details.style.flex = '1';
+
+      const name = document.createElement('strong');
+      name.textContent = product.name || 'Sports product';
+
+      const category = document.createElement('p');
+      category.textContent =
+        [product.brand, product.category].filter(Boolean).join(' · ');
+
+      const price = document.createElement('p');
+      price.textContent =
+        '₹' + Number(product.price).toLocaleString('en-IN');
+      price.style.color = 'var(--red)';
+      price.style.fontWeight = '700';
+
+      details.append(name, category, price);
+
+      if (product.rating != null) {
+        const rating = document.createElement('p');
+        rating.textContent =
+          `★ ${product.rating} (${product.review_count ?? 0} reviews)`;
+        details.appendChild(rating);
+      }
+
+      if (affiliateUrl) {
+        const link = document.createElement('a');
+        link.href = affiliateUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer sponsored';
+        link.textContent = 'View on retailer ↗';
+        details.appendChild(link);
+      }
+
+      card.style.cssText =
+        'display:flex;gap:14px;align-items:center;padding:14px 0;border-top:1px solid rgba(255,255,255,.12)';
+
+      card.append(image, details);
+      list.appendChild(card);
+    });
+
+    if (list.children.length) {
+      respText.appendChild(list);
+    }
+  } catch (error) {
+    respText.textContent =
+      error.message || 'AI search failed. Please try again.';
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    btn.textContent = 'Ask AI →';
+  }
+}
+
 
 // ─── SUBSCRIBE ─────────────────────────────────────────
 function subscribe(){
