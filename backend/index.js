@@ -160,7 +160,6 @@ app.post('/ai/recommend', async (req, res) => {
             contents: prompt,
             config: {
                 responseMimeType: 'application/json',
-                temperature: 0.2,
                 maxOutputTokens: 350
             }
         });
@@ -220,7 +219,54 @@ app.post('/ai/recommend', async (req, res) => {
         });
     } catch (error) {
         console.error('AI recommendation error:', error.message);
-        res.status(502).json({ error: 'The AI search could not complete right now. Please try again shortly.' });
+
+        // Keep product discovery usable when Gemini is overloaded or returns invalid JSON.
+        try {
+            const terms = queryText.toLowerCase().match(/[a-z0-9₹]+/g) || [];
+            const ignored = new Set(['the','for','and','with','under','over','best','find','need','want','some','good','from','into','my','me','a','an','to','of','in','on','gear','product','products']);
+            const keywords = terms.filter(word => !ignored.has(word) && word.length > 1);
+            const fallbackProducts = products
+                .map(p => {
+                    const searchable = [p.name, p.description, p.sport, p.brand, p.categories?.name]
+                        .filter(Boolean).join(' ').toLowerCase();
+                    const score = keywords.reduce((total, word) => total + (searchable.includes(word) ? (p.name.toLowerCase().includes(word) ? 3 : 1) : 0), 0);
+                    return { product: p, score };
+                })
+                .filter(item => item.score > 0)
+                .sort((a, b) => b.score - a.score || Number(b.product.rating || 0) - Number(a.product.rating || 0))
+                .slice(0, 3)
+                .map(item => item.product);
+
+            if (fallbackProducts.length) {
+                const ids = fallbackProducts.map(p => p.id);
+                const { data: fallbackOffers } = await supabase
+                    .from('affiliate_offers')
+                    .select('product_id, merchant, affiliate_url, current_price, currency')
+                    .in('product_id', ids);
+
+                return res.json({
+                    message: 'AI is temporarily busy, so these closest catalogue matches are based on your search terms.',
+                    products: fallbackProducts.map(p => {
+                        const offer = (fallbackOffers || []).find(o => o.product_id === p.id && o.affiliate_url);
+                        return {
+                            id: p.id, name: p.name, description: p.description, sport: p.sport,
+                            brand: p.brand, price: p.price, original_price: p.original_price,
+                            currency: p.currency || 'INR', image_url: p.image_url,
+                            rating: p.rating, review_count: p.review_count,
+                            category: p.categories?.name || '',
+                            merchant: offer?.merchant || 'Retailer',
+                            affiliate_url: offer?.affiliate_url || ''
+                        };
+                    })
+                });
+            }
+        } catch (fallbackError) {
+            console.error('Catalogue fallback failed:', fallbackError.message);
+        }
+
+        res.status(503).json({
+            error: 'AI is temporarily busy and no close catalogue matches were found. Please try a simpler search shortly.'
+        });
     }
 });
 
